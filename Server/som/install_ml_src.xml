@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<!DOCTYPE module SYSTEM "http://www.strategyobject.com/dtd/install.dtd">
+
+<module name="@ModuleBaseName@">
+  <property name="locale_dir" value="${so.installer.locale.dir}"/>
+  <property name="cfg_dir" value="${so.installer.config.dir}"/>
+
+  <!--
+    Copy files into server directory.
+  -->
+  <copy toDir="${so.installer.module.dir}">
+    <fileset dir="/modules" >
+      <include name="**/*.jar"/>
+    </fileset>
+  </copy>
+
+
+  <!--
+    Import into Kernel DB
+  -->
+  <system>
+    <!--
+      Modify config files
+    -->
+    <config name="language">
+      <fileset dir="lng">
+        <include name="**/*.properties"/>
+      </fileset>
+    </config>
+    <DL></DL>
+  </system>
+
+</module>

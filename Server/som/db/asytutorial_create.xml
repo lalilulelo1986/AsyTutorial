@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE create SYSTEM "http://strategyobject.com/dtd/create.dtd">
+<create>
+	<table name="TUTORIAL2_PERSON_TAB">
+		<column name="INSTANCE_ID" type="INTEGER" null="false" />
+		<column name="IDE_FNA" type="VARCHAR" size="35" />
+		<column name="IDE_LNA" type="VARCHAR" size="35" />
+		<column name="IDE_BDA" type="DATE" />
+		<primary_key>
+			<column name="INSTANCE_ID" />
+		</primary_key>
+	</table>
+
+	<table name="TUTORIAL3_PERSON_TAB">
+		<column name="INSTANCE_ID" type="INTEGER" null="false" />
+		<column name="IDE_FNA" type="VARCHAR" size="35" />
+		<column name="IDE_LNA" type="VARCHAR" size="35" />
+		<column name="IDE_BDA" type="DATE" />
+		<column name="IDE_PIC" type="LONGVARBINARY" />
+		<column name="IDE_SEX" type="INTEGER" />
+		<column name="COO_ADR" type="VARCHAR" size="50" />
+		<column name="COO_CPO" type="VARCHAR" size="6" />
+		<column name="COO_TEL" type="VARCHAR" size="20" />
+		<column name="COO_CIT" type="VARCHAR" size="25" />
+		<column name="USR_LOG" type="VARCHAR" size="25" />
+		<column name="USR_PWD" type="VARCHAR" size="20" />
+		<primary_key>
+			<column name="INSTANCE_ID" />
+		</primary_key>
+	</table>
+
+
+</create>

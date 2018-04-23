@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<project basedir="." default="jars" name="asytutorial Client">
+
+  <property file="build.properties"/>
+
+  <!-- The line below will include in build global properties -->
+  <property file="${build.dir}/global.properties"/>
+
+  <property file="classpath.properties"/>
+  <property file="extclasspath.properties"/>
+  <property file="testclasspath.properties"/>
+  <property file="${moduleinfo.properties}"/>
+
+  <property name="classpath" value="${using.classpath}:${using.extclasspath}"/>
+
+  <target name="-print" unless="l.printed">
+    <echo>      Project: ${ant.project.name}
+      Processing ${ant.file} </echo>
+    <property name="l.printed" value="true"/>
+  </target>
+
+  <target name="-checkjar">
+    <dependset>
+      <srcfileset dir="${build.classes}" includes="**/*.class"/>
+      <srcfilelist dir="." files="manifest.mf"/>
+      <srcfileset file="${moduleinfo.properties}"/>
+      <targetfilelist dir="${lib}" files="${jarname}"/>
+    </dependset>
+    <available property="l.jarexists" file="${jarfullname}"/>
+  </target>
+
+  <target name="-defineTask">
+    <taskdef name="convertProperty" classname="so.ant.tasks.ConvertToPropertyVal"
+             classpath="${build.dir}/ant/lib/soant.jar"/>
+  </target>
+
+  <target name="-depend" unless="fastcompile">
+    <depend srcdir="${src}"
+            destdir="${build.classes}"
+            cache=".cache"
+            closure="yes"
+            dump="true"
+            classpath="${classpath}"/>
+  </target>
+
+  <!--
+    Compile java files. It will compile only update files.
+  -->
+  <target name="compile" depends="-print,-depend" description="Compile project">
+    <mkdir dir="${build.classes}"/>
+    <javac srcdir="${src}"
+           destdir="${build.classes}"
+           classpath="${classpath}"
+           debug="${build.compiler.debug}"
+           deprecation="${build.compiler.deprecation}"
+           source="${source}"
+           target="${target}"/>
+  </target>
+
+  <!--
+    Make jar(s).
+  -->
+  <target name="jars"
+          depends="-print,compile,-checkjar,-defineTask"
+          unless="l.jarexists"
+          description="Make jars">
+    <mkdir dir="${lib}"/>
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+      </filterset>
+    </copy>
+
+    <jar destfile="${jarfullname}"
+         compress="true"
+         manifest="manifest-subst.mf">
+      <fileset dir="${build.classes}"/>
+      <fileset dir="${src}">
+        <exclude name="**/*.java"/>
+        <exclude name="**/*.form"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/*.class"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <!--
+    Make java documentation.
+  -->
+  <target name="javadoc" depends="-print" description="Javadoc for my API.">
+    <mkdir dir="${docs}"/>
+    <tstamp>
+        <format property="CURRDATE" pattern="dd-MM-yyyy"/>
+    </tstamp>
+    <tstamp>
+        <format property="YEAR" pattern="yyyy" locale="en"/>
+    </tstamp>
+
+    <property name="subproject.name" value="${module.fullname} Client"/>
+    <property name="subproject.version" value="${module.version}"/>
+
+    <javadoc sourcepath="${src}"
+             destdir="${docs}"
+             maxmemory="128m"
+             packagenames="kz.asytutorial.*"
+             classpath="${classpath}"
+             overview="overview.html"
+             use="true"
+             author="true"
+             splitindex="true"
+             windowtitle="${subproject.name}"
+             stylesheetfile="stylesheet.css"
+             version="true">
+      <doctitle><![CDATA[<h1>${subproject.name}</h1>]]></doctitle>
+      <header><![CDATA[<B>${subproject.name}</B> ver. ${subproject.version}]]></header>
+      <footer><![CDATA[<A HREF=mailto:support@strategyobject.com?subject=${subproject.name}%20${subproject.version}%20Comments>Submit your comments</A>]]></footer>
+      <bottom><![CDATA[<FONT COLOR="#A43490">Copyright &copy; 1996-${YEAR} <A HREF="http://www.strategyobject.com">Strategy Object</A>. All rights reserved. <BR>Last revised: ${CURRDATE}</FONT>]]></bottom>
+    </javadoc>
+  </target>
+
+  <!--
+    Clean our build.
+  -->
+  <target name="clean" depends="-print" description="Clean all build.">
+    <delete failonerror="false" dir="${build.classes}"/>
+    <delete>
+      <fileset dir="${src}">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete dir="${docs}"/>
+    <delete file="manifest-subst.mf"/>
+    <delete failonerror="false" file="${jarfullname}"/>
+    <delete failonerror="false" dir="${release.dir}"/>
+    <property name="fastcompile" value="true"/>
+  </target>
+
+  <!--
+    Create src.zip
+  -->
+  <target name="src.zip" depends="-print" description="Create src.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/src.zip">
+      <fileset dir="${src}" includes="**/*.java"/>
+    </zip>
+  </target>
+
+  <!--
+    Create doc.zip
+  -->
+  <target name="doc.zip" depends="-print,javadoc" description="Create doc.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/doc.zip">
+      <fileset dir="." includes="${docs}/**/*"/>
+    </zip>
+  </target>
+
+  <target name="clean_doc" depends="-print" description="Clean docs">
+    <delete dir="${docs}"/>
+  </target>
+
+  <!--
+    Create project.zip
+  -->
+  <target name="project.zip" depends="-print" description="Create project.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/project.zip">
+      <fileset dir=".">
+        <exclude name="*.zip"/>
+        <exclude name="*.jar"/>
+        <exclude name="${release.dir}/*"/>
+        <exclude name="**/*.class"/>
+        <exclude name="**/.*"/>
+        <exclude name="${docs}/**"/>
+        <exclude name="${lib}/**"/>
+      </fileset>
+    </zip>
+  </target>
+
+  <!--
+        Deploying targets. Used to update installed JARS with newly compiled version.
+  -->
+
+<!--  <target name="checkDeploy" if="so.client.install.dir">
+    <condition property="l.jar.exists">
+      <or>
+        <isset property="copy.anyway"/>
+        <available file="${so.client.install.dir}/lib/${jarname}"/>
+      </or>
+    </condition>
+  </target>-->
+
+  <target name="serverDeploy" depends="-print" description="Deploys server JARs."
+          if="NEVER.EXECUTE.THIS.TARGET"/>
+
+  <target name="clientDeploy"
+          depends="-print,jars"
+          description="Deploys client JARs."
+          if="so.client.install.dir">
+    <copy file="${jarfullname}" todir="${so.client.install.dir}/lib"/>
+  </target>
+
+  <target name="ulaDeploy" description="Deploys ULA JARs."
+          if="NEVER.EXECUTE.THIS.TARGET"/>
+
+  <target name="synchronize" description="Deploys all JARs."
+          depends="serverDeploy,clientDeploy,ulaDeploy"/>
+
+  <!--TESTS-->
+  <target name="cleanTestClasses" description="Clean all test classes"
+          depends="createTestDir">
+    <delete failonerror="false" dir="${testDir}/classes"/>
+  </target>
+
+  <target name= "compileTests" description="Compile JUnit tests classses"
+          depends="createTestDir, cleanTestClasses">
+    <mkdir dir="${testDir}/classes"/>
+    <javac debug="${build.compiler.debug}"
+           deprecation="${build.compiler.deprecation}"
+           destdir="${testDir}/classes"
+           srcdir="${testDir}/src"
+           classpath="${classpath}:${test.classpath}"/>
+  </target>
+
+  <target name="cleanTestResults" description="Clean all test results"
+          depends="createTestDir">
+    <delete dir="${testResults}"/>
+  </target>
+
+  <target name="createTestDir"
+          description="Check if test directory is presented in the directory tree">
+    <mkdir dir="${testDir}"/>
+    <mkdir dir="${testDir}/src"/>
+  </target>
+
+  <target name="test" description="JUnit test"
+          depends="createTestDir, compileTests, cleanTestResults">
+    <mkdir dir="${testResults}"/>
+    <junit printsummary="yes" showoutput="yes" fork="true"
+          failureproperty="failure" errorproperty="failure">
+      <classpath >
+        <pathelement path="${testDir}/classes"/>
+        <pathelement path="${classpath}"/>
+        <pathelement path="${test.classpath}"/>
+      </classpath>
+      <batchtest fork="true" todir="${testResults}">
+        <fileset dir = "${testDir}/src" >
+          <include name= "**/**Test.java" />
+        </fileset>
+      </batchtest>
+      <!-- Creating brief output to the console-->
+      <formatter type="brief" usefile="false"/>
+      <!-- Creating plain output to files-->
+      <formatter type="plain" usefile="true" />
+      <!-- Creating xml output to files-->
+      <formatter type="xml" usefile="true" />
+    </junit>
+
+    <!-- Create JUnit report in xml and html format-->
+    <junitreport todir="${testResults}">
+      <fileset dir="${testResults}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report todir="${testResults}/html"/>
+    </junitreport>
+
+    <fail message="JUnit tests not passed" if="failure"/>
+  </target>
+
+</project>

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Module: @ModuleBaseName@
+Module-Name: @ModuleFullName@
+Module-Type: @ModuleType@
+Module-License: @ModuleLicense@
+Module-Summary: @ModuleSummary@
+Module-Description: @ModuleDescription@
+Module-Specification-Version: @ModuleVersion@
+Module-Kernel-Dependencies:  SERVER/1 >= 2.2.35
+Module-Module-Dependencies: so.admin/1 >= 3.3.17
+Module-Install: kz.asytutorial.module.AsytutorialModule
+Class-Path: ext/asytutorial.jar
+Shared-Jar: asytutorial.jar
+Client-Jar: asytutorialc.jar
+Server-Jar: asytutorials.jar
+

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<project basedir="." default="jars" name="asytutorial">
+
+  <property file="build.properties"/>
+
+  <!-- The line below will include in build global properties -->
+  <property file="${build.dir}/global.properties"/>
+
+  <property file="classpath.properties"/>
+  <property file="extclasspath.properties"/>	
+
+  <property file="${moduleinfo.properties}"/>
+
+  <property name="classpath" value="${using.classpath}:${using.extclasspath}"/>
+
+  <target name="-print" unless="l.printed">
+    <echo>      Project: ${ant.project.name}
+      Processing ${ant.file} </echo>
+    <property name="l.printed" value="true"/>
+  </target>
+
+  <target name="-defineBDO">
+    <taskdef name="bdo" classname="so.ant.tasks.BuildDependsOn" classpath="${build.dir}/ant/lib/soant.jar"/>
+  </target>
+
+  <!--
+    Make jar(s).
+  -->
+  <target name="jars" depends="-print,-defineBDO" description="Compile project">
+    <bdo buildfiles="${subproject.buildfiles}"
+         target="jars"
+         properties="fastcompile"
+         inheritAll="false"/>
+  </target>
+
+
+  <!--
+    Make java documentation.
+  -->
+  <target name="javadoc" depends="-print" description="Javadoc for my API.">
+    <mkdir dir="${docs}"/>
+    <tstamp>
+        <format property="CURRDATE" pattern="dd-MM-yyyy"/>
+    </tstamp>
+    <tstamp>
+        <format property="YEAR" pattern="yyyy" locale="en"/>
+    </tstamp>
+
+    <property name="subproject.name" value="${module.fullname}"/>
+    <property name="subproject.version" value="${module.version}"/>
+
+    <javadoc destdir="${docs}"
+             maxmemory="128m"
+             packagenames="kz.asytutorial.*"
+             overview="overview.html"
+             use="true"
+             author="true"
+             splitindex="true"
+             windowtitle="${subproject.name}"
+             stylesheetfile="stylesheet.css"
+             version="true">
+      <doctitle><![CDATA[<h1>${subproject.name}</h1>]]></doctitle>
+      <header><![CDATA[<B>${subproject.name}</B> ver. ${subproject.version}]]></header>
+      <footer><![CDATA[<A HREF=mailto:support@strategyobject.com?subject=${subproject.name}%20${subproject.version}%20Comments>Submit your comments</A>]]></footer>
+      <bottom><![CDATA[<FONT COLOR="#A43490">Copyright &copy; 1996-${YEAR} <A HREF="http://www.strategyobject.com">Strategy Object</A>. All rights reserved. <BR>Last revised: ${CURRDATE}</FONT>]]></bottom>
+      <sourcepath>
+        <pathelement location="${Shared}/src"/>
+        <pathelement location="${Client}/src"/>
+        <pathelement location="${Server}/src"/>
+
+      </sourcepath>
+    </javadoc>
+  </target>
+
+  <!--
+    Clean our build.
+  -->
+  <target name="clean" depends="-print,-defineBDO" description="Clean all build.">
+    <bdo buildfiles="${subproject.buildfiles}" target="clean" inheritAll="false"/>
+
+    <delete dir="${docs}"/>
+    <delete>
+      <fileset dir="lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </delete>
+    <delete failonerror="false" dir="${release.dir}"/>
+    <property name="fastcompile" value="true"/>
+  </target>
+
+
+  <!--
+    Create src.zip
+  -->
+  <target name="src.zip" depends="-print" description="Create src.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/src.zip">
+      <fileset dir="${Shared}/src" includes="**/*.java"/>
+      <fileset dir="${Client}/src" includes="**/*.java"/>
+      <fileset dir="${Server}/src" includes="**/*.java"/>
+
+    </zip>
+  </target>
+
+  <!--
+    Create doc.zip
+  -->
+  <target name="doc.zip" depends="-print,javadoc" description="Create doc.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/doc.zip">
+      <fileset dir="." includes="${docs}/**/*"/>
+    </zip>
+  </target>
+
+  <!--
+    Create project.zip
+  -->
+  <target name="project.zip" depends="-print" description="Create project.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/project.zip">
+      <fileset dir=".">
+        <exclude name="*.zip"/>
+        <exclude name="*.jar"/>
+        <exclude name="**/release/*"/>
+        <exclude name="release/*"/>
+        <exclude name="**/*.class"/>
+        <exclude name="**/.*"/>
+        <exclude name="lib/**"/>
+        <exclude name="**/lib/**"/>
+        <exclude name="docs/**"/>
+        <exclude name="**/docs/**"/>
+      </fileset>
+    </zip>
+  </target>
+
+
+  <!--
+        Deploying targets. Used to update installed JARS with newly compiled version.
+  -->
+  <target name="serverDeploy"
+          depends="-print,-defineBDO"
+          description="Deploys server JARs."
+          if="so.server.install.dir">
+    <bdo buildfiles="${subproject.buildfiles}" target="serverDeploy" inheritAll="false"/>
+  </target>
+
+  <target name="clientDeploy"
+          depends="-print,-defineBDO"
+          description="Deploys client JARs."
+          if="so.client.install.dir">
+    <bdo buildfiles="${subproject.buildfiles}" target="clientDeploy" inheritAll="false"/>
+  </target>
+
+  <target name="ulaDeploy"
+          depends="-print,-defineBDO"
+          description="Deploys ULA JARs."
+          if="so.ula.install.dir">
+    <bdo buildfiles="${subproject.buildfiles}" target="ulaDeploy" inheritAll="false"/>
+  </target>
+
+  <target name="synchronize"
+          depends="-print,-defineBDO"
+          description="Deploys all JARs.">
+    <bdo buildfiles="${subproject.buildfiles}" target="synchronize" inheritAll="false"/>
+  </target>
+
+  <target name="-somlng" if="languages">
+    <ant dir="${Server}" target="somlng" inheritAll="false">
+      <property name="prepare.dir" location="${prepare.dir}"/>
+      <property name="languages" value="${languages}"/>
+    </ant>
+  </target>
+  
+  <!--
+    Prepare files into directory for building of setup program
+  -->
+  <target name="makeServer" depends="-print" description="Build server" if="prepare.dir">
+    <condition property="p1" value="som.languages=${som.languages}">
+      <isset property="som.languages"/>
+    </condition>
+    <condition property="p1" value="">
+      <not>
+        <isset property="p1"/>
+      </not>
+    </condition>
+    <delete failonerror="false" file="p1.tmp"/>
+    <concat destfile="p1.tmp">${p1}</concat>
+    <ant dir="${Server}" target="som" inheritAll="false">
+      <property name="prepare.dir" location="${prepare.dir}"/>
+      <property file="p1.tmp"/>
+      <property name="fastcompile" value="${fastcompile}"/>
+    </ant>
+    <delete failonerror="false" file="p1.tmp"/>
+
+    <antcall target="-somlng"/>
+  </target>
+
+  <target name="makeClient" depends="-print,-defineBDO" description="Build client" if="prepare.dir">
+    <bdo buildfiles="${subproject.buildfiles}" target="clientDeploy" inheritAll="false">
+      <property name="so.client.install.dir" location="${prepare.dir}"/>
+    </bdo>
+  </target>
+
+  <target name="makeUla" depends="-print,-defineBDO" description="Build ULA" if="prepare.dir">
+    <bdo buildfiles="${subproject.buildfiles}" target="ulaDeploy" inheritAll="false">
+      <property name="so.ula.install.dir" location="${prepare.dir}"/>
+    </bdo>
+  </target>
+
+  <target name="test" description="JUnit test" depends="-print,-defineBDO,jars">
+    <bdo buildfiles="${subproject.buildfiles}" target="test" inheritAll="false"/>
+  </target>
+
+</project>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ************************************************************************** 
+	* @ProjectName_____________________________________@ Version: @VerNr@ * * 
+	* * This software is the proprietary information of STRATEGY OBJECT. * * 
+	Use is subject to license terms. * * * * Copyright (c) 1997-2009 STRATEGY 
+	OBJECT * * All rights reserved. @VersionDate__________@ * ************************************************************************** -->
+
+<properties>
+	<group type="connection">
+		<property name="gcf.drv_manager" from="driver" />
+		<property name="gcf.url" from="url" default="xxxGCF.mod" />
+		<property name="gcf.user_name" from="user" />
+		<property name="gcf.password" from="password" />
+		<description><![CDATA[Connection to database Module GCF is required.
+This database is available. You can create new or use the same database.
+Then enter connection properties in this form.]]></description>
+	</group>
+	<group type="connection">
+		<property name="asytutorial.drv_manager" from="driver" />
+		<property name="asytutorial.url" from="url" default="asytutorial.mod" />
+		<property name="asytutorial.user_name" from="user" />
+		<property name="asytutorial.password" from="password" />
+		<description><![CDATA[Connection to database Module asytutorial is required.This database is available. You can create new or use the same database.Then enter connection properties in this form.]]></description>
+	</group>
+
+</properties>

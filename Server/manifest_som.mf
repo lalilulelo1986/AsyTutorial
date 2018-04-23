@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Module: @ModuleBaseName@
+Module-Specification-Version: @ModuleVersion@
+Module-Type: @ModuleType@
+Property-File: prop.xml
+Install-File: install.xml
+

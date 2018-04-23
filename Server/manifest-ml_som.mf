@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Module: @ModuleBaseName@
+Module-Specification-Version: @ModuleVersion@
+Module-Type: @ModuleType@
+Install-File: install.xml
+

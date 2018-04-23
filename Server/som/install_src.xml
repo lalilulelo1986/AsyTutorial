@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ************************************************************************** 
+	* @ProjectName_____________________________________@ Version: @VerNr@ * * 
+	* * This software is the proprietary information of STRATEGY OBJECT. * * 
+	Use is subject to license terms. * * * * Copyright (c) 1997-2009 STRATEGY 
+	OBJECT * * All rights reserved. @VersionDate__________@ * ************************************************************************** -->
+<!DOCTYPE module SYSTEM "http://www.strategyobject.com/dtd/install.dtd">
+
+<module name="@ModuleBaseName@">
+	<property name="locale_dir" value="${so.installer.locale.dir}" />
+	<property name="cfg_dir" value="${so.installer.config.dir}" />
+
+	<!-- Copy files into server directory. -->
+	<copy toDir="${so.installer.module.dir}">
+		<fileset dir="/modules">
+			<include name="**/*.jar" />
+		</fileset>
+	</copy>
+
+	<!-- Properties for DB. -->
+	<db manager="${gcf.drv_manager}" url="${gcf.url}" user="${gcf.user_name}"
+		password="${gcf.password}">
+		<GCF>
+			<table type="History" name="Historykz_asytutorial" />
+			<table type="IED" name="IEDkz_asytutorial" />
+			<table type="Locks" name="Lockskz_asytutorial" />
+			<table type="Track" name="Trackkz_asytutorial" />
+		</GCF>
+		<appserver dbsource="jdbc/kz.asytutorial.gcf" name="kz.asytutorial.gcf">
+			<pool minPoolSize="1" maxPoolSize="-1" maxIdleTime="5" />
+		</appserver>
+	</db>
+
+
+	<db manager="${asytutorial.drv_manager}" url="${asytutorial.url}"
+		user="${asytutorial.user_name}" password="${asytutorial.password}">
+		<create>
+			<fileset dir="db">
+				<include name="asytutorial_create.xml" />
+			</fileset>
+		</create>
+		<insert>
+			<fileset dir="db">
+				<include name="asytutorial_insert.xml" />
+			</fileset>
+		</insert>
+		<appserver dbsource="jdbc/kz.asytutorial" name="kz.asytutorial">
+			<pool minPoolSize="1" maxPoolSize="-1" maxIdleTime="5" />
+		</appserver>
+	</db>
+
+
+
+	<!-- Import into Kernel DB -->
+	<system>
+		<!-- Modify config files -->
+		<config name="properties">
+			<fileset dir="config">
+				<include name="**/*.properties" />
+			</fileset>
+		</config>
+
+		<config name="language">
+			<fileset dir="lng">
+				<include name="**/*.properties" />
+			</fileset>
+		</config>
+
+		<config name="format">
+			<fileset dir="format">
+				<include name="**/*.properties" />
+			</fileset>
+		</config>
+
+		<BU name="BUasytutorial">tutorial BU</BU>
+
+		<binder name="B_TUTORIAL_1" status="">
+			<field name="server" value="kz.asytutorial.tutorial1.server.S_Tutorial1" />
+			<field name="dom" value="kz.asytutorial.tutorial1.D_Tutorial1" />
+			<field name="client" value="kz.asytutorial.tutorial1.client.DC_Tutorial1" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
+
+		<binder name="B_TUTORIAL_2" status="">
+			<field name="server" value="kz.asytutorial.tutorial2.server.S_Tutorial2" />
+			<field name="dom" value="kz.asytutorial.tutorial2.D_Tutorial2" />
+			<field name="client" value="kz.asytutorial.tutorial2.client.DC_Tutorial2" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
+
+		<binder name="B_TUTORIAL_3" status="">
+			<field name="server" value="kz.asytutorial.tutorial3.server.S_Tutorial3" />
+			<field name="dom" value="kz.asytutorial.tutorial3.D_Tutorial3" />
+			<field name="client" value="kz.asytutorial.tutorial3.client.DC_Tutorial3" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
+
+
+		<DL>
+			<folder name="Basic Tutorials" icon="">
+				<access bu="BUasytutorial">
+					<full />
+				</access>
+				<item name="Tutorial 1 : Basic Example" icon="">
+					<field name="binder" value="B_TUTORIAL_1" />
+					<field name="skin" value="kz.asytutorial.tutorial1.client.VD_Tutorial1" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+				<item name="Tutorial 2: Database Connection" icon="">
+					<field name="binder" value="B_TUTORIAL_2" />
+					<field name="skin" value="kz.asytutorial.tutorial2.client.VD_Tutorial2" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+				<item name="Tutorial 3: Graphic User Interface" icon="">
+					<field name="binder" value="B_TUTORIAL_3" />
+					<field name="skin" value="kz.asytutorial.tutorial3.client.VD_Tutorial3" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+
+
+			</folder>
+		</DL>
+
+	</system>
+
+</module>

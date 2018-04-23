@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Module: @ModuleBaseName@
+Module-Name: @ModuleFullName@
+Module-Type: @ModuleType@
+Module-License: @ModuleLicense@
+Module-Summary: @ModuleSummary@
+Module-Description: @ModuleDescription@
+Module-Specification-Version: @ModuleVersion@
+Module-Locale: @Locale@

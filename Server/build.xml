@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<project basedir="." default="jars" name="asytutorial Server">
+
+  <property file="build.properties"/>
+
+  <!-- The line below will include in build global properties -->
+  <property file="${build.dir}/global.properties"/>
+
+  <property file="classpath.properties"/>
+  <property file="extclasspath.properties"/>
+  <property file="testclasspath.properties"/>
+  <property file="${moduleinfo.properties}"/>
+
+  <property name="classpath" value="${using.classpath}:${using.extclasspath}"/>
+
+  <target name="-print" unless="l.printed">
+    <echo>      Project: ${ant.project.name}
+      Processing ${ant.file} </echo>
+    <property name="l.printed" value="true"/>
+  </target>
+
+  <target name="-defineTask">
+    <taskdef name="ln" classname="so.ant.tasks.LocaleName" classpath="${build.dir}/ant/lib/soant.jar"/>
+    <taskdef name="availableFiles" classname="so.ant.tasks.AvailableFiles" classpath="${build.dir}/ant/lib/soant.jar"/>
+    <taskdef name="convertProperty" classname="so.ant.tasks.ConvertToPropertyVal" classpath="${build.dir}/ant/lib/soant.jar"/>
+    <taskdef name="changelog" classname="so.ant.tasks.changelog.ChangelogTask" classpath="${build.dir}/ant/lib/soant.jar"/>
+  </target>
+
+  <target name="-checkjar">
+    <dependset>
+      <srcfileset dir="${build.classes}" includes="**/*.class"/>
+      <srcfileset dir="${src}">
+        <exclude name="**/*.java"/>
+        <exclude name="**/*.form"/>
+        <exclude name="**/.*"/>
+      </srcfileset>
+      <srcfilelist dir="." files="manifest.mf, changelog.html"/>
+      <srcfileset file="${moduleinfo.properties}"/>
+      <srcfileset file="../changelog.xml"/>
+      <targetfilelist dir="${lib}" files="${jarname}"/>
+    </dependset>
+    <available property="l.jarexists" file="${jarfullname}"/>
+  </target>
+
+  <target name="-depend" unless="fastcompile">
+    <depend srcdir="${src}"
+            destdir="${build.classes}"
+            cache=".cache"
+            closure="yes"
+            dump="true"
+            classpath="${classpath}"/>
+  </target>
+
+  <!--
+    Compile java files. It will compile only update files.
+  -->
+  <target name="compile" depends="-print,-depend" description="Compile project">
+    <mkdir dir="${build.classes}"/>
+    <javac srcdir="${src}"
+           destdir="${build.classes}"
+           classpath="${classpath}"
+           debug="${build.compiler.debug}"
+           deprecation="${build.compiler.deprecation}"
+           source="${source}"
+           target="${target}"/>
+  </target>
+
+  <!--
+    Make jar(s).
+  -->
+  <target name="jars"
+          depends="-print,compile,-checkjar,-defineTask"
+          unless="l.jarexists"
+          description="Make jars">
+    <mkdir dir="${lib}"/>
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="changelog.html"/>
+    <changelog sourceFile="../changelog.xml" resultFile="changelog.html"
+               globalPropertyFile="${build.dir}/global.properties"
+               transformation="HTML"/>
+
+    <jar destfile="${jarfullname}"
+         compress="true"
+         manifest="manifest-subst.mf">
+      <fileset dir="${build.classes}"/>
+      <fileset dir="${src}">
+        <exclude name="**/*.java"/>
+        <exclude name="**/*.form"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/*.class"/>
+      </fileset>
+      <fileset file="changelog.html"/>
+    </jar>
+  </target>
+
+  <!--
+    Make java documentation.
+  -->
+  <target name="javadoc" depends="-print" description="Javadoc for my API.">
+    <mkdir dir="${docs}"/>
+    <tstamp>
+        <format property="CURRDATE" pattern="dd-MM-yyyy"/>
+    </tstamp>
+    <tstamp>
+        <format property="YEAR" pattern="yyyy" locale="en"/>
+    </tstamp>
+
+    <property name="subproject.name" value="${module.fullname} Server"/>
+    <property name="subproject.version" value="${module.version}"/>
+
+    <javadoc sourcepath="${src}"
+             destdir="${docs}"
+             maxmemory="128m"
+             packagenames="kz.asytutorial.*"
+             classpath="${classpath}"
+             overview="overview.html"
+             use="true"
+             author="true"
+             splitindex="true"
+             windowtitle="${subproject.name}"
+             stylesheetfile="stylesheet.css"
+             version="true">
+      <doctitle><![CDATA[<h1>${subproject.name}</h1>]]></doctitle>
+      <header><![CDATA[<B>${subproject.name}</B> ver. ${subproject.version}]]></header>
+      <footer><![CDATA[<A HREF=mailto:support@strategyobject.com?subject=${subproject.name}%20${subproject.version}%20Comments>Submit your comments</A>]]></footer>
+      <bottom><![CDATA[<FONT COLOR="#A43490">Copyright &copy; 1996-${YEAR} <A HREF="http://www.strategyobject.com">Strategy Object</A>. All rights reserved. <BR>Last revised: ${CURRDATE}</FONT>]]></bottom>
+    </javadoc>
+  </target>
+
+  <!--
+    Clean our build.
+  -->
+  <target name="clean" depends="-print" description="Clean all build.">
+    <delete failonerror="false" dir="${build.classes}"/>
+    <delete>
+      <fileset dir="${src}">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete dir="${docs}"/>
+    <delete file="manifest-subst.mf"/>
+    <delete failonerror="false" dir="${build.classes}"/>
+    <delete failonerror="false" file="${jarfullname}"/>
+    <delete failonerror="false" dir="${release.dir}"/>
+    <delete failonerror="false" dir="som/modules"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/install.xml"/>
+    <delete failonerror="false" dir="modules"/>
+    <property name="fastcompile" value="true"/>
+  </target>
+
+  <!--
+    Create src.zip
+  -->
+  <target name="src.zip" depends="-print" description="Create src.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/src.zip">
+      <fileset dir="${src}" includes="**/*.java"/>
+    </zip>
+  </target>
+
+  <!--
+    Create doc.zip
+  -->
+  <target name="doc.zip" depends="-print,javadoc" description="Create doc.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/doc.zip">
+      <fileset dir="." includes="${docs}/**/*"/>
+    </zip>
+  </target>
+
+  <target name="clean_doc" depends="-print" description="Clean docs">
+    <delete dir="${docs}"/>
+  </target>
+
+  <!--
+    Create project.zip
+  -->
+  <target name="project.zip" depends="-print" description="Create project.zip">
+    <mkdir dir="${release.dir}"/>
+    <zip zipfile="${release.dir}/project.zip">
+      <fileset dir=".">
+        <exclude name="*.zip"/>
+        <exclude name="*.jar"/>
+        <exclude name="${release.dir}/*"/>
+        <exclude name="**/*.class"/>
+        <exclude name="**/.*"/>
+        <exclude name="${docs}/**"/>
+        <exclude name="${lib}/**"/>
+      </fileset>
+    </zip>
+  </target>
+
+  <!--
+        Deploying targets. Used to update installed JARS with newly compiled version.
+  -->
+
+  <target name="serverSOMDeploy"
+          depends="-print"
+          description="Deploys server JARs."
+          if="so.server.install.dir">
+
+    <copy todir="${so.server.install.dir}/etc/language">
+       <fileset dir="som/lng">
+          <include name="*.properties"/>
+       </fileset>
+    </copy>
+    <copy todir="${so.server.install.dir}/etc/config/${module.name}">
+       <fileset dir="som/config">
+          <include name="**/*.properties"/>
+       </fileset>
+    </copy>
+  </target>
+
+  <target name="checkDeploy" if="so.server.install.dir">
+    <available property="l.jar.exists" file="${so.server.install.dir}/modules/${jarname}"/>
+  </target>
+
+  <target name="serverDeploy"
+          depends="-print,jars,checkDeploy"
+          description="Deploys server JARs."
+          if="l.jar.exists">
+    <copy file="${jarfullname}" todir="${so.server.install.dir}/modules"/>
+  </target>
+
+  <target name="clientDeploy" description="Deploys client JARs." if="NEVER.EXECUTE.THIS.TARGET">
+  </target>
+
+  <target name="ulaDeploy" description="Deploys ULA JARs." if="NEVER.EXECUTE.THIS.TARGET">
+  </target>
+
+  <target name="synchronize" description="Deploys all JARs." depends="serverDeploy,clientDeploy,ulaDeploy"/>
+
+
+  <target name="som" depends="-print,jars" description="SOM">
+    <mkdir dir="som/modules/ext"/>
+    <delete failonerror="false">
+      <fileset dir="som/modules" includes="*.jar"/>
+    </delete>
+    <copy file="${jarfullname}" todir="som/modules"/>
+    <copy file="${lib}/${shared.jar}" todir="som/modules/ext"/>
+
+<!-- Support default module. -->
+    <condition property="Autoinstall" value="">
+      <not>
+        <contains string="${autoinstall.modules}" substring="${module.name}"/>
+      </not>
+    </condition>
+    <condition property="Autoinstall" value="&lt;autoinstall/&gt;">
+      <contains string="${autoinstall.modules}" substring="${module.name}"/>
+    </condition>
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+      </filterset>
+    </copy>
+    <loadfile property="MANIFEST" srcFile="manifest-subst.mf"/>
+
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <copy file="som/Info/info_src.xml" tofile="som/Info/info.xml" encoding="UTF-8">
+      <filterset>
+        <filter token="MANIFEST" value="${MANIFEST}"/>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+        <filter token="Autoinstall" value="${Autoinstall}"/>
+        <filter token="Locale" value=""/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="som/install.xml"/>
+    <copy file="som/install_src.xml" tofile="som/install.xml">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest_som.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.basename}"/>
+        <filter token="ModuleFullName" value="${module.fullname}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}"/>
+      </filterset>
+    </copy>
+
+    <condition property="som.languages" value="">
+      <not>
+        <isset property="som.languages"/>
+      </not>
+    </condition>
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">lng/*_${som.languages}.</concat>
+    <replace file="tmp" token="lng/*_." value=""/>
+    <replace file="tmp" token="," value=".,"/>
+    <replace file="tmp" token="." value=".properties"/>
+    <replace file="tmp" token="," value=",lng/*_"/>
+    <loadfile property="pinclude" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <copy file="changelog.html" tofile="som/Info/changelog.html"/>
+
+    <mkdir dir="${prepare.dir}/modules"/>
+    <jar compress="true"
+         jarfile="${prepare.dir}/modules/${somfile}"
+         manifest="manifest-subst.mf">
+      <fileset dir="som" excludes="Info/info*_src.xml,install*_src.xml,lng/*_*.properties"/>
+      <fileset dir="som" includes="${pinclude}"/>
+    </jar>
+
+    <!-- Clean temprorary files -->
+    <delete failonerror="false" dir="som/modules"/>
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/install.xml"/>
+    <delete failonerror="false" file="som/Info/changelog.html"/>
+  </target>
+
+  <target name="-checkML" description="Check for existing of ML files">
+  <!--
+    <concat destfile="tmp">lng/*_${language.all}.</concat>
+    <replace file="tmp" token="lng/*_." value=""/>
+    <replace file="tmp" token="," value=".,"/>
+    <replace file="tmp" token="." value=".properties"/>
+    <replace file="tmp" token="," value=",lng/*_"/>
+    <loadfile property="pinclude" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <availableFiles property="ml.exists">
+      <fileset dir="som" includes="${pinclude}"/>
+    </availableFiles>
+    -->
+    <availableFiles property="ml.exists">
+      <fileset dir="som/lng" includes="*_${language}.properties"/>
+    </availableFiles>
+  </target>
+
+  <target name="-jarml"
+          depends="-print,-defineTask"
+          if="ml.exists"
+          description="Make ML jar">
+    <mkdir dir="som/modules"/>
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest-ml.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Dependency" value="${module.name}"/>
+        <filter token="Locale" value="${language}"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${jarname}</concat>
+    <replace file="tmp" token=".jar" value="_${language}.jar"/>
+    <loadfile property="mljarname" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${jarname}</concat>
+    <replace file="tmp" token=".jar" value="_${language}.jar"/>
+    <loadfile property="mljarname" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <jar destfile="som/modules/${mljarname}"
+         compress="true"
+         manifest="manifest-subst.mf">
+      <exclude name="**"/>
+    </jar>
+  </target>
+
+  <target name="-somlng"
+          depends="-print,-checkML,-jarml,-defineTask"
+          description="SOM MultiLinguistik"
+          if="ml.exists">
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest-ml.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Dependency" value="${module.name}"/>
+      </filterset>
+    </copy>
+    <loadfile property="MANIFEST" srcFile="manifest-subst.mf"/>
+
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <copy file="som/Info/info_src.xml" tofile="som/Info/info.xml" encoding="UTF-8">
+      <filterset>
+        <filter token="MANIFEST" value="${MANIFEST}"/>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Autoinstall" value=""/>
+        <filter token="Locale" value="locale=&quot;${language}&quot;"/>
+      </filterset>
+    </copy>
+    <delete failonerror="false" file="som/install.xml"/>
+
+    <copy file="som/install_ml_src.xml" tofile="som/install.xml">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+      </filterset>
+    </copy>
+    <delete failonerror="false" file="manifest-subst.mf"/>
+
+    <copy file="manifest-ml_som.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${somfile}</concat>
+    <replace file="tmp" token=".som" value="_${language}.som"/>
+    <loadfile property="mlsomfile" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <concat destfile="tmp">lng/*_${language.all}.</concat>
+    <replace file="tmp" token="lng/*_." value=""/>
+    <replace file="tmp" token="," value=".,"/>
+    <replace file="tmp" token="." value=".properties"/>
+    <replace file="tmp" token="," value=",lng/*_"/>
+    <loadfile property="pinclude" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <echo message="${pinclude}"/>
+    <jar basedir="som"
+         compress="true"
+         jarfile="${prepare.dir}/modules/${mlsomfile}"
+         manifest="manifest-subst.mf"
+         includes="Info/info.xml,install.xml,modules/${mljarname},${pinclude}"/>
+
+    <!-- Clean temprorary files -->
+    <delete failonerror="false" dir="som/modules"/>
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/install.xml"/>
+  </target>
+
+  <target name="somlng" depends="-print,-defineTask" description="SomLng">
+    <condition property="languages" value="">
+      <not>
+        <isset property="languages"/>
+      </not>
+    </condition>
+    <ln propertyName="language" locale="${languages}" dir="som/lng" target="-somlng"/>
+  </target>
+
+  <target name="devlng" depends="-print" description="Create Developer Language">
+    <property location="${basedir}/.." name="prj.basedir"/>
+    <basename file="${prj.basedir}" property="basename"/>
+
+    <property location="${release.dir}/lng/${basename}" name="tdir"/>
+
+    <mkdir dir="${tdir}"/>
+    <mkdir dir="${tdir}/lib"/>
+    <mkdir dir="${tdir}/som"/>
+
+    <copy file="${build.dir}/ant/lib/soant.jar" todir="${tdir}/lib"/>
+    <copy todir="${tdir}/som">
+      <fileset dir="som">
+        <include name="lng/*.properties"/>
+        <include name="Info/info_src.xml"/>
+        <include name="install_ml_src.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${tdir}">
+      <fileset dir=".">
+        <include name="LICENSE"/>
+        <include name="build.properties"/>
+        <include name="manifest-ml.mf"/>
+        <include name="manifest-ml.mf"/>
+        <include name="manifest-ml_som.mf"/>
+        <include name="overview"/>
+      </fileset>
+      <fileset dir="..">
+        <include name="moduleinfo.properties"/>
+      </fileset>
+    </copy>
+    <copy file="build_ml.xml" tofile="${tdir}/build.xml"/>
+
+    <replace file="${tdir}/build.properties"
+             token="moduleinfo.properties=../moduleinfo.properties"
+             value="moduleinfo.properties=./moduleinfo.properties"/>
+    <replace file="${tdir}/build.properties"
+             token="lib=../lib"
+             value="lib=./lib"/>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${somfile}</concat>
+    <replace file="tmp" token=".som" value="_lng.zip"/>
+
+    <loadfile property="lngzip" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+
+    <zip basedir="${tdir}/.." zipfile="${release.dir}/${lngzip}"/>
+
+    <delete dir="${tdir}/.." failonerror="false"/>
+  </target>
+
+  <!--TESTS-->
+  <target name="cleanTestClasses" description="Clean all test classes"
+          depends="createTestDir">
+    <delete failonerror="false" dir="${testDir}/classes"/>
+  </target>
+
+  <target name= "compileTests" description="Compile JUnit tests classses"
+          depends="createTestDir, cleanTestClasses">
+    <mkdir dir="${testDir}/classes"/>
+    <javac debug="${build.compiler.debug}"
+           deprecation="${build.compiler.deprecation}"
+           destdir="${testDir}/classes"
+           srcdir="${testDir}/src"
+           classpath="${classpath}:${test.classpath}"/>
+  </target>
+
+  <target name="cleanTestResults" description="Clean all test results"
+          depends="createTestDir">
+    <delete dir="${testResults}"/>
+  </target>
+
+  <target name="createTestDir"
+          description="Check if test directory is presented in the directory tree">
+    <mkdir dir="${testDir}"/>
+    <mkdir dir="${testDir}/src"/>
+  </target>
+
+  <target name="test" description="JUnit test"
+          depends="createTestDir, compileTests, cleanTestResults">
+    <mkdir dir="${testResults}"/>
+    <junit printsummary="yes" showoutput="yes" fork="true"
+          failureproperty="failure" errorproperty="failure">
+      <classpath >
+        <pathelement path="${testDir}/classes"/>
+        <pathelement path="${classpath}"/>
+        <pathelement path="${test.classpath}"/>
+      </classpath>
+      <batchtest fork="true" todir="${testResults}">
+        <fileset dir = "${testDir}/src" >
+          <include name= "**/**Test.java" />
+        </fileset>
+      </batchtest>
+      <!-- Creating brief output to the console-->
+      <formatter type="brief" usefile="false"/>
+      <!-- Creating plain output to files-->
+      <formatter type="plain" usefile="true" />
+      <!-- Creating xml output to files-->
+      <formatter type="xml" usefile="true" />
+    </junit>
+
+    <!-- Create JUnit report in xml and html format-->
+    <junitreport todir="${testResults}">
+      <fileset dir="${testResults}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report todir="${testResults}/html"/>
+    </junitreport>
+
+    <fail message="JUnit tests not passed" if="failure"/>
+  </target>
+
+
+</project>

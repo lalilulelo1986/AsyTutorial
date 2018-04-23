@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<project basedir="." default="somlng" name="asytutorial Server">
+
+  <property file="build.properties"/>
+
+  <property file="classpath.properties"/>
+  <property file="${moduleinfo.properties}"/>
+
+  <target name="-print" unless="l.printed">
+    <echo>      Project: ${ant.project.name}
+      Processing ${ant.file} </echo>
+    <property name="l.printed" value="true"/>
+  </target>
+
+  <target name="-defineTask">
+    <taskdef name="ln" classname="so.ant.tasks.LocaleName" classpath="lib/soant.jar"/>
+    <taskdef name="availableFiles" classname="so.ant.tasks.AvailableFiles" classpath="lib/soant.jar"/>
+    <taskdef name="convertProperty" classname="so.ant.tasks.ConvertToPropertyVal" classpath="lib/soant.jar"/>
+  </target>
+
+
+  <target name="-checkML" description="Check for existing of ML files">
+  <!--
+    <concat destfile="tmp">lng/*_${language.all}.</concat>
+    <replace file="tmp" token="lng/*_." value=""/>
+    <replace file="tmp" token="," value=".,"/>
+    <replace file="tmp" token="." value=".properties"/>
+    <replace file="tmp" token="," value=",lng/*_"/>
+    <loadfile property="pinclude" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <availableFiles property="ml.exists">
+      <fileset dir="som" includes="${pinclude}"/>
+    </availableFiles>
+    -->
+    <availableFiles property="ml.exists">
+      <fileset dir="som/lng" includes="*_${language}.properties"/>
+    </availableFiles>
+  </target>
+
+  <target name="-jarml"
+          depends="-print"
+          if="ml.exists"
+          description="Make ML jar">
+    <mkdir dir="som/modules"/>
+
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+    
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest-ml.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Dependency" value="${module.name}"/>
+        <filter token="Locale" value="${language}"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${jarname}</concat>
+    <replace file="tmp" token=".jar" value="_${language}.jar"/>
+    <loadfile property="mljarname" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${jarname}</concat>
+    <replace file="tmp" token=".jar" value="_${language}.jar"/>
+    <loadfile property="mljarname" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <jar destfile="som/modules/${mljarname}"
+         compress="true"
+         manifest="manifest-subst.mf">
+      <exclude name="**"/>
+    </jar>
+  </target>
+
+  <target name="-somlng"
+          depends="-print,-checkML,-jarml"
+          description="SOM MultiLinguistik"
+          if="ml.exists">
+          
+    <convertProperty name="module.summary.1" value="${module.summary}"/>
+    <convertProperty name="module.description.1" value="${module.description}"/>
+    <convertProperty name="module.license.1" value="${module.license}"/>
+    
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <copy file="manifest-ml.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Dependency" value="${module.name}"/>
+      </filterset>
+    </copy>
+    <loadfile property="MANIFEST" srcFile="manifest-subst.mf"/>
+
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <copy file="som/Info/info_src.xml" tofile="som/Info/info.xml" encoding="UTF-8">
+      <filterset>
+        <filter token="MANIFEST" value="${MANIFEST}"/>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+        <filter token="Locale" value="locale=&quot;${language}&quot;"/>
+      </filterset>
+    </copy>
+    <delete failonerror="false" file="som/install.xml"/>
+
+    <copy file="som/install_ml_src.xml" tofile="som/install.xml">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description}"/>
+        <filter token="ModuleLicense" value="${module.license}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+      </filterset>
+    </copy>
+    <delete failonerror="false" file="manifest-subst.mf"/>
+
+    <copy file="manifest-ml_som.mf" tofile="manifest-subst.mf">
+      <filterset>
+        <filter token="ModuleName" value="${module.name}.${language.code}"/>
+        <filter token="ModuleVersion" value="${module.version}"/>
+        <filter token="ModuleBaseName" value="${module.name}.${language.code}/${module.release}"/>
+        <filter token="ModuleFullName" value="${module.fullname}, ${language.name}"/>
+        <filter token="ModuleSummary" value="${module.summary.1}, ${language.name}"/>
+        <filter token="ModuleDescription" value="${module.description.1}"/>
+        <filter token="ModuleLicense" value="${module.license.1}"/>
+        <filter token="ModuleType" value="${module.type}, language"/>
+      </filterset>
+    </copy>
+
+    <delete failonerror="false" file="tmp"/>
+    <concat destfile="tmp">${somfile}</concat>
+    <replace file="tmp" token=".som" value="_${language}.som"/>
+    <loadfile property="mlsomfile" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <concat destfile="tmp">lng/*_${language.all}.</concat>
+    <replace file="tmp" token="lng/*_." value=""/>
+    <replace file="tmp" token="," value=".,"/>
+    <replace file="tmp" token="." value=".properties"/>
+    <replace file="tmp" token="," value=",lng/*_"/>
+    <loadfile property="pinclude" srcFile="tmp">
+      <filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <delete failonerror="false" file="tmp"/>
+
+    <echo message="${pinclude}"/>
+    <mkdir dir="${prepare.dir}/modules"/>
+    <jar basedir="som"
+         compress="true"
+         jarfile="${prepare.dir}/modules/${mlsomfile}"
+         manifest="manifest-subst.mf"
+         includes="Info/info.xml,install.xml,modules/${mljarname},${pinclude}"/>
+
+    <!-- Clean temprorary files -->
+    <delete failonerror="false" dir="som/modules"/>
+    <delete failonerror="false" file="manifest-subst.mf"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/Info/info.xml"/>
+    <delete failonerror="false" file="som/install.xml"/>
+  </target>
+
+  <target name="somlng" depends="-print,-defineTask" description="SomLng">
+    <condition property="languages" value="">
+      <not>
+        <isset property="languages"/>
+      </not>
+    </condition>
+    <ln propertyName="language" locale="${languages}" dir="som/lng" target="-somlng"/>
+  </target>
+
+</project>

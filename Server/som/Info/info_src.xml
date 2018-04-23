@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?> <!--
+     **************************************************************************
+     * @ProjectName_____________________________________@    Version: @VerNr@ *
+     *                                                                        *
+     * This software is the proprietary information of STRATEGY OBJECT.       *
+     * Use is subject to license terms.                                       *
+     *                                                                        *
+     * Copyright (c) 1997-2009 STRATEGY OBJECT                                *
+     * All rights reserved.                           @VersionDate__________@ *
+     **************************************************************************
+-->
+<!DOCTYPE information SYSTEM "http://www.strategyobject.com/dtd/information.dtd">
+
+<information name="@ModuleFullName@" module="@ModuleBaseName@" @Locale@>
+   @Autoinstall@
+   <license>@ModuleLicense@</license>
+   <version>@ModuleVersion@</version>
+   <summary>@ModuleSummary@</summary>
+   <description>@ModuleDescription@</description>
+   <manifest><![CDATA[@MANIFEST@]]></manifest>
+</information>
