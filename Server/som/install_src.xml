@@ -119,6 +119,15 @@
 			</access>
 		</binder>
 
+		<binder name="B_TUTORIAL_6" status="">
+			<field name="server" value="kz.asytutorial.tutorial6.server.S_Tutorial6" />
+			<field name="dom" value="kz.asytutorial.tutorial6.D_Tutorial6" />
+			<field name="client" value="kz.asytutorial.tutorial6.client.DC_Tutorial6" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
+
 		<DL>
 			<folder name="Basic Tutorials" icon="">
 				<access bu="BUasytutorial">
@@ -155,6 +164,13 @@
 				<item name="Tutorial 5: Iterative Segment" icon="">
 					<field name="binder" value="B_TUTORIAL_5" />
 					<field name="skin" value="kz.asytutorial.tutorial5.client.VD_Tutorial5" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+				<item name="Tutorial 6: Finder" icon="">
+					<field name="binder" value="B_TUTORIAL_6" />
+					<field name="skin" value="kz.asytutorial.tutorial6.client.VD_Tutorial6" />
 					<access bu="BUasytutorial">
 						<full />
 					</access>

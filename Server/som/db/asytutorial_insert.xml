@@ -12,5 +12,9 @@
 	</table>
 	<table name="TUTORIAL5_CHILD_TAB">
 	</table>
+	<table name="TUTORIAL6_PERSON_TAB">
+	</table>
+	<table name="TUTORIAL6_CHILD_TAB">
+	</table>
 
 </insert>
