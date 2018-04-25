@@ -18,11 +18,6 @@ import so.swing.KPasswordField;
  * */
 public class VP_Tutorial3User  extends ElfVisualPage implements C_Tutorial3 {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3156745541093675701L;
-
 	// Declare Visual controls
 	transient private ElfField fld_Login = elfFieldPool.getElfField();
 	transient private KPasswordField pld_Password = new KPasswordField();

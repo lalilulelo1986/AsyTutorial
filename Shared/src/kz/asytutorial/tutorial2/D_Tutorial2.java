@@ -12,8 +12,7 @@ public final class D_Tutorial2 extends KDocument implements C_Tutorial2 {
 	 * DOM
 	 * add elements to page
 	 */
-	private static final long serialVersionUID = 7973057436283141421L;
-
+	
 	/**
 	 * Document constructor - Sets the document name
 	 */

@@ -60,6 +60,9 @@ public class VP_Tutorial3COO extends ElfVisualPage implements C_Tutorial3 {
 		addFacetNumeric(fld_Telephone, ds(COO).de(TEL), "INT");
 	}
 	
+	public void initRules() {
+	}
+	
 	public static String lng(String property) {
 		return so.i18n.IntlObj.createMessage("Tutorial3", property);
 	}

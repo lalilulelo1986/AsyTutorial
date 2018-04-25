@@ -8,11 +8,6 @@ import so.kernel.core.KDocument;
 public final class D_Tutorial1 extends KDocument implements C_Tutorial1 {
 
 	/**
-	 * DOM
-	 */
-	private static final long serialVersionUID = 7973057436283141421L;
-
-	/**
 	 * Document constructor - Sets the document name
 	 */
 	public D_Tutorial1() {

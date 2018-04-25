@@ -69,6 +69,9 @@ public class VP_Tutorial3IDE extends ElfVisualPage implements C_Tutorial3 {
 		addFacetImage(img_Picture, ds(IDE).de(PIC));
 	}
 
+	public void initRules() {
+	}
+	
 	public static String lng(String property) {
 		return so.i18n.IntlObj.createMessage("Tutorial3", property);
 	}

@@ -101,6 +101,23 @@
 			</access>
 		</binder>
 
+		<binder name="B_TUTORIAL_4" status="">
+			<field name="server" value="kz.asytutorial.tutorial4.server.S_Tutorial4" />
+			<field name="dom" value="kz.asytutorial.tutorial4.D_Tutorial4" />
+			<field name="client" value="kz.asytutorial.tutorial4.client.DC_Tutorial4" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
+
+		<binder name="B_TUTORIAL_5" status="">
+			<field name="server" value="kz.asytutorial.tutorial5.server.S_Tutorial5" />
+			<field name="dom" value="kz.asytutorial.tutorial5.D_Tutorial5" />
+			<field name="client" value="kz.asytutorial.tutorial5.client.DC_Tutorial5" />
+			<access bu="BUasytutorial">
+				<full />
+			</access>
+		</binder>
 
 		<DL>
 			<folder name="Basic Tutorials" icon="">
@@ -124,6 +141,20 @@
 				<item name="Tutorial 3: Graphic User Interface" icon="">
 					<field name="binder" value="B_TUTORIAL_3" />
 					<field name="skin" value="kz.asytutorial.tutorial3.client.VD_Tutorial3" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+				<item name="Tutorial 4: Status and Operations" icon="">
+					<field name="binder" value="B_TUTORIAL_4" />
+					<field name="skin" value="kz.asytutorial.tutorial4.client.VD_Tutorial4" />
+					<access bu="BUasytutorial">
+						<full />
+					</access>
+				</item>
+				<item name="Tutorial 5: Iterative Segment" icon="">
+					<field name="binder" value="B_TUTORIAL_5" />
+					<field name="skin" value="kz.asytutorial.tutorial5.client.VD_Tutorial5" />
 					<access bu="BUasytutorial">
 						<full />
 					</access>
